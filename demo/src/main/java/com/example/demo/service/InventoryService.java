@@ -1,0 +1,116 @@
+package com.example.demo.service;
+
+import com.example.demo.dto.InventoryDTO;
+import com.example.demo.dto.InventoryReportDTO;
+import com.example.demo.entity.Inventory;
+import com.example.demo.entity.Products;
+import com.example.demo.payload.ResponData;
+import com.example.demo.repository.InventoryRepository;
+import com.example.demo.repository.InventoryTransactionRepository;
+import com.example.demo.repository.ProductsReponsitory;
+import com.example.demo.service.imp.InventoryServiceimp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class InventoryService implements InventoryServiceimp {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+    @Autowired
+    private InventoryTransactionRepository inventoryTransactionRepository;
+    @Autowired
+    private ProductsReponsitory productsReponsitory;
+
+    @Override
+    public List<InventoryDTO> getInventory() {
+        List<InventoryDTO> inventoryDTOList = new ArrayList<>();
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        Page<Inventory> inventoryPage = inventoryRepository.findAll(pageRequest);
+        for (Inventory inventory : inventoryPage) {
+            InventoryDTO inventoryDTO = new InventoryDTO();
+            inventoryDTO.setId(inventory.getInventoryID());
+            inventoryDTO.setQuantity(inventory.getQuantity());
+            inventoryDTO.setLast_update(inventory.getLastUpdated());
+            inventoryDTO.setProduct_id(inventory.getProducts().getProductID());
+            inventoryDTO.setProduct_name(inventory.getProducts().getProductName());
+            inventoryDTOList.add(inventoryDTO);
+        }return inventoryDTOList;
+    }
+
+    @Override
+    public boolean addInventory(int productid) {
+        Products products = productsReponsitory.findById(productid).orElse(null);
+        Inventory isInventory = inventoryRepository.findByProducts(products);
+        if (isInventory != null) {
+            return false;
+        }
+        System.out.println(products);
+        if (products == null) {
+            return false;
+        }
+        Inventory inventory = new Inventory();
+        inventory.setQuantity(products.getQuantity());
+        inventory.setProducts(products);
+        inventory.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inventory);
+        return true;
+    }
+
+    @Override
+    public boolean updateInventory(int productid, int quantity) {
+        Products products = productsReponsitory.findById(productid).orElse(null);
+        Inventory inventory = inventoryRepository.findByProducts(products);
+        System.out.println(inventory);
+        if (inventory == null) {
+            return false;
+        }
+        System.out.println(products);
+        if (products == null) {
+            return false;
+        }
+        products.setQuantity(quantity);
+        inventory.setQuantity(quantity);
+        inventory.setLastUpdated(LocalDateTime.now());
+        productsReponsitory.save(products);
+        inventoryRepository.save(inventory);
+        return true;
+    }
+
+
+    @Override
+    public boolean deleteInventory(int inventoryId) {
+        Inventory inventory = inventoryRepository.findById(inventoryId).orElse(null);
+        if (inventory == null) {
+            return false;
+        }
+        inventoryRepository.delete(inventory);
+        return true;
+    }
+
+    @Override
+    public List<InventoryReportDTO> getInventotyReport() {
+        List<InventoryReportDTO> inventoryReportDTOList = new ArrayList<>();
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        Page<Inventory> inventoryPage = inventoryRepository.findAll(pageRequest);
+        for (Inventory inventory : inventoryPage) {
+            Products products = inventory.getProducts();
+            int quantity = products.getQuantity();
+            String status = quantity <=8 ? "Need to restock": "In stock";
+            InventoryReportDTO inventoryReportDTO = new InventoryReportDTO();
+            inventoryReportDTO.setProductName(products.getProductName());
+            inventoryReportDTO.setProductId(products.getProductID());
+            inventoryReportDTO.setQuantity(quantity);
+            inventoryReportDTO.setStatus(status);
+            inventoryReportDTO.setDate(inventory.getLastUpdated());
+            inventoryReportDTOList.add(inventoryReportDTO);
+        }
+        return inventoryReportDTOList;
+    }
+}
