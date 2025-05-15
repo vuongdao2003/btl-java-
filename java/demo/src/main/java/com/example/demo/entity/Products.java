@@ -1,0 +1,90 @@
+    package com.example.demo.entity;
+
+    import jakarta.persistence.*;
+    @Entity(name="Products")
+    @Table(name="Products")
+    public class Products {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name="ProductID")
+        private int ProductID;
+
+        @Column(name="ProductName")
+        private String ProductName;
+
+        @Column(name = "image")
+        private String image;  // Lưu đường dẫn hình ảnh hoặc URL
+
+        @ManyToOne
+        @JoinColumn(name="CategoryID")
+        private Category category;
+
+        @Column(name="Price")
+        private double Price;
+
+        public Category getCategory() {
+            return category;
+        }
+
+        public void setCategory(Category category) {
+            this.category = category;
+        }
+
+
+        @Column(name="Quantity")
+        private int Quantity;
+
+        @ManyToOne
+        @JoinColumn(name="SupplierID")
+        private Suppliers Supplier;
+
+        public int getProductID() {
+            return ProductID;
+        }
+
+        public void setProductID(int productID) {
+            ProductID = productID;
+        }
+
+        public Suppliers getSupplier() {
+            return Supplier;
+        }
+
+        public void setSupplier(Suppliers supplier) {
+            Supplier = supplier;
+        }
+
+
+
+        public String getImage() {
+            return image;
+        }
+
+        public void setImage(String image) {
+            this.image = image;
+        }
+
+        public int getQuantity() {
+            return Quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            Quantity = quantity;
+        }
+
+        public double getPrice() {
+            return Price;
+        }
+
+        public void setPrice(double price) {
+            Price = price;
+        }
+
+        public String getProductName() {
+            return ProductName;
+        }
+
+        public void setProductName(String productName) {
+            ProductName = productName;
+        }
+    }

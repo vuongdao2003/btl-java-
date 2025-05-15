@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Home</title>
+</head>
+<body>
+<h1>Welcome Home</h1>
+<button onclick="logout()">Logout</button>
+
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'index.html';
+  }
+
+  async function loadUserData() {
+    const response = await fetch('http://localhost:8080/login/home', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+    const data = await response.json();
+    console.log('Data from server:', data);
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+  }
+
+  // Load protected data
+  loadUserData();
+</script>
+</body>
+</html>
